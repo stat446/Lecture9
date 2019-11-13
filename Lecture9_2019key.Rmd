@@ -1,0 +1,222 @@
+---
+title: "Lecture 9 - Key"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+
+## Unequal Probability Sampling
+
+For a SRS, each sampling unit has the same probability of being included in the sample. _For other sampling procedures, different units in the population will have different probabilities of being included in a sample._
+\vfill
+
+The different inclusion probabilities depend on either:
+
+1. the type of sampling procedure or 
+\vfill
+2. the probabilities may be imposed by the researcher to obtain better estimates _by including ``more important'' units with a higher probability._
+\vfill
+
+In either case, the unequal inclusion probabilities must be taken into account when deriving estimators of population parameters.
+\vfill
+
+Example. Suppose you are interested in modeling the total amount of natural gas used across the country. There are several large distributors (e.g. Northwestern Energy) that account for a large share of the total usage; however, there are many more small distributors (e.g. municipalities) that account for a small share of the total gas used. _Discuss a procedure for sampling distributors with the goal of estimating the total natural gas used._
+\vfill
+\vfill
+
+_Q: If we change the inclusion probabilities so that many of the larger distributors are selected, how would this affect our standard estimation schemes. For instance, consider $\hat{t} = N \times  \bar{y}$ as an estimate of $t$?_
+\vfill
+
+\newpage	
+
+
+### Hansen-Hurwitz Estimation
+
+One method of estimating $\bar{y}_U$ and $t$ when the probabilities of selection sampling units are not equal is _Hansen-Hurwitz estimation._
+\vfill
+
+Situation: 
+
+1. A sample of size $n$ is to be selected
+\vfill
+
+2. sampling is _done with replacement, and_
+\vfill
+3. the probability of selecting the $i^{th}$ unit equals $p_i$ on each selection of a sampling unit. _That is, the probability for unit $i$ remains constant and equal to $p_i$ for every selection of a sampling unit._
+\vfill
+
+Sampling with replacement is less precise than sampling without replacement (i.e. the variance of the estimator will be larger). However, when the sampling fraction $f=n/N$ is small, the probability that any unit will appear twice in the sample is also small. _In this case, sampling with replacement, assuming that the inclusion probabilities are roughly in line with $n/N$, is roughly equivalent to sampling without replacement._
+\vfill
+
+Thus, the loss of some precision using sampling with replacement can offset the complexity of having to determine the inclusion probabilities when sampling is done without replacement.
+\vfill
+
+The Hansen-Hurwitz estimator of $t$ is:
+	\begin{equation}
+	 \hat{t}_{hh}= \frac{1}{n} \sum_{i \in \mathcal{S}} \frac{y_i}{p_i}
+	 \end{equation}
+	  where $p_i$ is the probability of selection for unit $i$ and $\mathcal{S}$ are the units in the sample (including repeats).
+\vfill
+
+The estimated variance of $\hat{t}_{hh}$ is 
+	\begin{equation}
+	\hat{V}(\hat{t}_{hh}) = \frac{1}{n} \frac{1}{n-1} \sum_{i \in \mathcal{S}}  \left(\frac{t_i}{p_i} - \hat{t}_{hh} \right)^2.
+	\end{equation}
+\vfill
+
+Because sampling is taken with replacement, each unit may be sampled more than once. Let $Q_i$ denote the number of times unit $i$ is sampled. Then the point estimate and variance formulas can be written as
+	\begin{eqnarray}
+	\hat{t}_{hh} &=& \frac{1}{n}  \sum_{i=1}^N Q_i \frac{t_i}{p_i}\\
+	\hat{V}(\hat{t}_{hh}) &=& \frac{1}{n} \frac{1}{n-1} \sum_{i=1}^N  Q_i \left(\frac{t_i}{p_i} - \hat{t}_{hh} \right)^2.
+	\end{eqnarray}
+Note this assume the sampling fraction is small and that the fpc can be ignored.
+\vfill
+
+The estimates for the population mean can be obtained by:
+	\begin{equation*}
+	\hat{\bar{y}}_{hh} = \frac{1}{N} \hat{t}_{hh} \hspace{3cm} \hspace{3cm} \hat{V}(\hat{\bar{y}}_{hh}) = \frac{1}{N^2} \hat{V}(\hat{t}_{hh})
+	\end{equation*}
+\vfill
+
+\newpage
+Example. Suppose $N= 5$ and we are taking $n=2$ samples with the probability of selection below.
+	\begin{center}
+	\begin{tabular}{|c|c|c|}
+	\hline 
+	ID & $p_i$ & $y_i$ \\ 
+	\hline 
+	1 & 1/12 & 9 \\ 
+	\hline 
+	2 & 2/12 & 22 \\ 
+	\hline 
+	3 & 2/12 & 19 \\ 
+	\hline 
+	4 & 4/12 & 42 \\ 
+	\hline 
+	5 & 3/12 & 28 \\ 
+	\hline 
+	 &  & 120 \\ 
+	\hline 
+\end{tabular} 
+\end{center}
+
+Repeat this process 4 times to illustrate how unequal probability sampling and estimation works.
+
+```{r}
+vals <- c(9,22,19,42,28)
+replicate(4,sample(1:5, 2, prob= c(1/12,2/12,2/12,4/12,3/12)))
+```
+\vfill
+
+\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|}
+	\hline 
+	Sample \# & ID1 & ID2 & $(y_1/p_1)$&$(y_2/p_2)$&$\hat{t}_{hh}$\\ 
+	\hline 
+	1 & &&&& \\ 
+	\hline 
+	2 & &&&& \\ 
+	\hline 
+	3 & &&&& \\ 
+	\hline 
+	4 & &&&& \\ 
+	\hline 
+	\end{tabular} 
+	\end{center}
+\vfill
+\vfill
+\vfill
+
+So how do we think about devising the selection probabilities: $p_i$?
+\vfill
+
+The ideal case for Hansen-Hurwitz estimation occurs when each selection probability $p_i$ is proportional to $y_i$ for all $i$. *Specifically, $p_i \approx y_i/t$. Then $y_i/p_i \approx t$ for all $i$ and $V(\hat{t}_{hh})$ will be small.*
+\vfill
+
+Therefore, in practice, if we believe the $y_i$ values are nearly proportional to some known variable (like sample unit size), *we should assign selection probabilities $p_i$ proportional to the value of that known variable. This would yield an estimator with small variance.*
+\vfill
+
+Confidence intervals follow the usual prescription given the standard errors calculated above.
+\vfill
+
+\newpage
+
+### Horvitz-Thompson Estimation
+A second method of estimating $\bar{y}_U$ and $t$ when the probability of selecting sampling units is not equal is _Horvitz-Thompson estimation._
+\vfill
+
+Now a sample can be taken with or without replacement.
+\vfill
+
+The first order inclusion probability $\pi_i$ is the probability unit $i$ will be included by a sampling design.
+\vfill
+
+The second-order inclusion probability $\pi_{ij}$ is the probability that _unit $i$ and unit $j$ will both be included by a sampling design._
+\vfill
+
+When the goal is to estimate the population total $t$ or the mean $\bar{y}_U$, and the $\pi_i's$ are known, the Horvitz-Thompson estimators follow as:
+	\begin{equation}
+	\hat{t}_{ht} = \sum_{i=1}^\nu \frac{y_i}{\pi_i} \hspace{2.5cm} \text{and} \hspace{2.5cm} \hat{\bar{y}}_{U,ht} = \frac{1}{N}\sum_{i=1}^\nu \frac{y_i}{\pi_i}
+	\end{equation}
+	where $\nu$ is the effective sample size.
+\vfill
+
+The effective sample size is the number of distinct units in the sample. When sampling without replacement, $\nu = n.$ When sampling with replacement, $\nu \leq n$.
+\vfill
+
+Because the summation is over the $\nu$ distinct units in the sample, _the estimator does not depend on the number of times a unit may be selected. This allows for Horvitz-Thompson estimators to be used for sampling plans with replacement or without replacement of units._
+\vfill
+
+The variance is estimated as :
+	\begin{equation}
+	\hat{V} (\hat{t}_{ht}) = \sum_{i=1}^\nu \left( \frac{1}{\pi_i^2} - \frac{1}{\pi_i}\right) y_i^2 + 2 \sum_{i=1}^\nu \sum_{j>i}^\nu \left(\frac{1}{\pi_i \pi_j} - \frac{1}{\pi_{ij}} \right)y_iy_j
+	\end{equation}
+
+\newpage
+
+#### Sampling with Probabilities Proportional to Size (PPS)
+
+Suppose that $n$ sampling units are selected _with replacement_ with selection probabilities proportional to the sizes of the units from a finite population of $N$ units.
+\vfill
+
+Let $p_i$ be the probability that unit $i$ is selected during the sampling with replacement process. Then $p_i = \frac{M_i}{M_T}$ where $M_i$ is the size of unit $i$ and $M_T = \sum_{i=1}^N M_i =$ the total size of the population of $N$ units.
+\vfill
+
+If sampling is done without replacement, determining inclusion probabilities is very complex. Thus, we will focus on sampling with replacement.
+\vfill
+
+When sampling with replacement, the first order inclusion probability:
+	\begin{eqnarray}
+	*\pi_i &=& Pr(\text{unit $i$ will be included in the sample)}\\*
+	*&=& 1 - Pr(\text{unit $i$ will not be included in the sample}) = 1 - (1-p_i)^n*
+	\end{eqnarray}
+\vfill
+
+To find the second order inclusion probability, we use the principle of inclusion/exclusion. That is, for two events A and B, the probability that both A and B occur is:
+	\begin{eqnarray*}
+	*Pr(A \text{ and } B) = Pr(A) + Pr(B) - Pr(A \text{ or } B)*
+	\end{eqnarray*}
+
+\newpage
+
+#### Cluster Sampling with Unequal Cluster Sizes
+
+Suppose the $N$ cluster sizes $M_1, M_2, \dots, M_N$ are not all equal and that a one-stage cluster sample of $n$ primary sampling units $(PSUs)$ is taken with the goal of estimating $t$ and $\bar{y}_U$.
+\vfill
+
+Let $M_i$ and $t_i$ be the sizes and totals of the $n$ sampled PSUs. Let $m=\sum_{i=1}^n M_i$ be the total number of SSUs in the sample.
+\vfill
+
+
+##### Primary Sampling Units Selected with PPS}
+
+Suppose that the PSUs are selected with replacement with draw-by-draw selection probabilities $p_i$ proportional to the sizes of the PSUs, $p_i = M_i/M_0$.
+\vfill
+
+Then either Horvitz-Thompson or the Hansen -Hurwitz estimators can be used.
+\vfill
